@@ -1,3 +1,4 @@
+/* eslint-disable operator-linebreak */
 /* *************************************************************************************************
  *                                                                                                *
  * Please read the following tutorial before implementing tasks:                                   *
@@ -125,8 +126,14 @@ function isTriangle(a, b, c) {
  *   { top:20, left:20, width: 20, height: 20 }    =>  false
  *
  */
-function doRectanglesOverlap(/* rect1, rect2 */) {
-  throw new Error('Not implemented');
+function doRectanglesOverlap(rect1, rect2) {
+  const isNotInersectX =
+    rect2.left > rect1.left + rect1.width ||
+    rect1.left > rect2.left + rect2.width;
+  const isNotInersectY =
+    rect2.top > rect1.top + rect1.height ||
+    rect1.top > rect2.top + rect2.height;
+  return !(isNotInersectX || isNotInersectY);
 }
 
 /**
@@ -466,12 +473,22 @@ function getMatrixProduct(m1, m2) {
  *
  */
 function evaluateTicTacToePosition(position) {
-  for (let i = 0; i < position.length; i += 1) {
-    for (let j = 0; j < position[0].length; j += 1) {
-      if (position[i].every((symb) => symb === position[i][0])) {
-        return position[i][0];
+  for (let i = 0; i < 3; i += 1) {
+    let symb = position[i][0];
+    let isEq = true;
+    if (position[i].length !== 3) {
+      symb = undefined;
+      isEq = false;
+    } else {
+      for (let j = 0; j < 3; j += 1) {
+        if (position[i][j] === undefined || position[i][j] !== symb) {
+          symb = undefined;
+          isEq = false;
+          break;
+        }
       }
     }
+    if (isEq) return symb;
   }
 
   for (let j = 0; j < position[0].length; j += 1) {
@@ -494,9 +511,8 @@ function evaluateTicTacToePosition(position) {
       isEq = false;
       break;
     }
-
-    if (isEq) return symb;
   }
+  if (isEq) return symb;
   symb = position[0][position.length - 1];
   isEq = true;
   for (let i = 1; i < position[0].length; i += 1) {
@@ -505,10 +521,8 @@ function evaluateTicTacToePosition(position) {
       isEq = false;
       break;
     }
-
-    if (isEq) return symb;
   }
-
+  if (isEq) return symb;
   return undefined;
 }
 
