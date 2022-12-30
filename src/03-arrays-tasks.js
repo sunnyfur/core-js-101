@@ -1,3 +1,7 @@
+/* eslint-disable indent */
+/* eslint-disable comma-dangle */
+/* eslint-disable no-confusing-arrow */
+/* eslint-disable implicit-arrow-linebreak */
 /* ********************************************************************************************
  *                                                                                            *
  * Please read the following tutorial before implementing tasks:                               *
@@ -555,10 +559,12 @@ function group(array, keySelector, valueSelector) {
   const map = new Map();
   return array.reduce(
     (acc, curr) =>
-      acc.set(
-        keySelector(curr),
-        (map.get(keySelector(curr)) || []).push(valueSelector(curr))
-      ),
+      acc.get(keySelector(curr))
+        ? acc.set(keySelector(curr), [
+            ...acc.get(keySelector(curr)),
+            valueSelector(curr),
+          ])
+        : acc.set(keySelector(curr), [valueSelector(curr)]),
     map
   );
 }
