@@ -110,7 +110,7 @@ function chainPromises(array, action) {
     resolve(results);
   })
     .then((res) => res.reduce(action))
-    .catch((err) => console.log(err));
+    .catch(() => {});
 
   // array.reduce(
   //   (acc, p) =>
