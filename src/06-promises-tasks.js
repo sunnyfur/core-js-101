@@ -56,7 +56,7 @@ function willYouMarryMe(isPositiveAnswer) {
  *
  */
 function processAllPromises(array) {
-  return Promise.allSettled(...array);
+  return Promise.all(array);
 }
 
 /**
@@ -78,8 +78,8 @@ function processAllPromises(array) {
  *    })
  *
  */
-function getFastestPromise(/* array */) {
-  throw new Error('Not implemented');
+function getFastestPromise(array) {
+  return Promise.race(array);
 }
 
 /**
@@ -99,8 +99,31 @@ function getFastestPromise(/* array */) {
  *    });
  *
  */
-function chainPromises(/* array, action */) {
-  throw new Error('Not implemented');
+function chainPromises(array, action) {
+  const results = [];
+
+  const merged = new Promise((resolve) => {
+    array.forEach(async (elem) => {
+      const res = await Promise.resolve(elem);
+      results.push(res);
+    });
+    resolve(results);
+  })
+    .then((res) => res.reduce(action))
+    .catch((err) => console.log(err));
+
+  // array.reduce(
+  //   (acc, p) =>
+  //     // eslint-disable-next-line implicit-arrow-linebreak, comma-dangle
+  //     acc
+  //       .then(() => p)
+  //       .then((r) => results.push(r))
+  //       // eslint-disable-next-line comma-dangle
+  //       .catch((err) => console.log(err))
+  //   // eslint-disable-next-line function-paren-newline
+  // );
+
+  return merged; // .then(() => results.reduce(action));
 }
 
 module.exports = {
