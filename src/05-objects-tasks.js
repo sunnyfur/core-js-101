@@ -1,3 +1,5 @@
+/* eslint-disable operator-linebreak */
+/* eslint-disable comma-dangle */
 /* ************************************************************************************************
  *                                                                                                *
  * Please read the following tutorial before implementing tasks:                                   *
@@ -112,37 +114,136 @@ function fromJSON(proto, json) {
  */
 
 const cssSelectorBuilder = {
-  result: '',
+  result: [],
+  isElementLast() {
+    return this.result.length > 0 && /^[a-zA-Z]{1,}/.test(this.result.at(-1));
+  },
+  isidLast() {
+    return this.result.length > 0 && /^#[a-zA-Z]{1,}/.test(this.result.at(-1));
+  },
+  isClassLast() {
+    return this.result.length > 0 && /^\.[a-zA-Z]{1,}/.test(this.result.at(-1));
+  },
+  isAtrLast() {
+    return (
+      this.result.length > 0 && /^\[[a-zA-Z]{1,}\]/.test(this.result.at(-1))
+    );
+  },
+  isPseudoClLast() {
+    return this.result.length > 0 && /^:[a-zA-Z]{1,}/.test(this.result.at(-1));
+  },
+  isPseudoElLast() {
+    return this.result.length > 0 && /^::[a-zA-Z]{1,}/.test(this.result.at(-1));
+  },
   element(value) {
-    this.result += value;
+    const newCss = { ...cssSelectorBuilder };
+
+    if (this.isElementLast()) {
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector'
+      );
+    }
+    if (this.result.length > 0) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    }
+    newCss.result = [...this.result, value];
+    return newCss;
   },
 
   id(value) {
-    this.result += `#${value}`;
+    const newCss = { ...cssSelectorBuilder };
+    if (this.isidLast()) {
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector'
+      );
+    }
+    if (
+      this.result.length > 0 &&
+      (this.isClassLast() ||
+        this.isAtrLast() ||
+        this.isPseudoClLast() ||
+        this.isPseudoElLast())
+    ) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    }
+    newCss.result = [...this.result, `#${value}`];
+    return newCss;
   },
 
   class(value) {
-    this.result += `.${value}`;
+    const newCss = { ...cssSelectorBuilder };
+
+    if (
+      // eslint-disable-next-line operator-linebreak
+      this.result.length > 0 &&
+      (this.isAtrLast() || this.isPseudoClLast() || this.isPseudoElLast())
+    ) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    }
+    newCss.result = [...this.result, `.${value}`];
+    return newCss;
   },
 
   attr(value) {
-    this.result += `[${value}]`;
+    const newCss = { ...cssSelectorBuilder };
+
+    if (
+      // eslint-disable-next-line operator-linebreak
+      this.result.length > 0 &&
+      (this.isPseudoClLast() || this.isPseudoElLast())
+    ) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    }
+    newCss.result = [...this.result, `[${value}]`];
+    return newCss;
   },
 
   pseudoClass(value) {
-    this.result += `:${value}`;
+    const newCss = { ...cssSelectorBuilder };
+    if (this.result.length > 0 && this.isPseudoElLast()) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    }
+    newCss.result = [...this.result, `:${value}`];
+    return newCss;
   },
 
   pseudoElement(value) {
-    this.result += `::${value}`;
+    const newCss = { ...cssSelectorBuilder };
+    if (this.result.length > 0 && this.isPseudoElLast()) {
+      throw new Error(
+        'Element, id and pseudo-element should not occur more then one time inside the selector'
+      );
+    }
+
+    newCss.result = [...this.result, `::${value}`];
+    return newCss;
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    const newCss = { ...cssSelectorBuilder };
+    newCss.result = [
+      selector1.stringify(),
+      ` ${combinator} `,
+      selector2.stringify(),
+    ];
+    return newCss;
   },
-  stringify() {},
+  stringify() {
+    const res = this.result.join('');
+    this.result = [];
+    return res;
+  },
 };
-
 module.exports = {
   Rectangle,
   getJSON,
